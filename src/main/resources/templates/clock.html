@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+
+	<head>
+	    <meta charset="UTF-8">
+	    <title th:text="${title}">Clock</title>
+		
+		<!-- アプリ風の表示用の設定 -->
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-title" content="Clock">
+		<link rel="apple-touch-icon" href="/images/icon-512.png">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+
+		<!-- manifest.jsonの読み込み -->
+		<link rel="manifest" href="/manifest.json">
+		
+		<!-- Google Fonts -->
+	    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+		
+		<!-- 外部CSSから共通のヘッダー設定を読み込む -->
+		<link rel="stylesheet" href="/css/style.css">
+		
+		<style>
+		   #date { 
+			font-size: 8vw;
+			 font-weight: bold;
+		   }
+		   
+		   #clock {
+			 font-size: 13vw;
+			  font-weight: bold;
+			   margin-top: 10px;
+			    font-family: 'Roboto Mono', monospace;
+			 }
+		</style>
+	    
+	</head>
+	
+	<style>
+	.blink {
+	    animation: blinkAnime 0.5s infinite;
+	}
+
+	@keyframes blinkAnime {
+	    0% { opacity: 1; }
+	    50% { opacity: 0; }
+	    100% { opacity: 1; }
+	}
+	</style>
+
+<body>
+
+	<header class="header-bar">
+	    <img src="/images/advt-logo.png" alt="Logo" class="header-logo">
+	    Advanced-Tec
+	</header>
+	
+	<div class="main">
+	    <div id="date"></div>
+	    <div id="clock"></div>
+	</div>
+
+	<script>
+		let timerId = null;
+
+		async function checkLatest() {
+		    try {
+		        const res = await fetch("/api/latest");
+		        const data = await res.json();
+
+		        //console.log("最新データ:", data);
+
+		        // データが null の場合は何もしない
+		        if (!data){
+					return;
+				}
+
+		        // ★ 条件判定（例：来訪業種が「配送業者」なら点滅）
+		        if (data.visitorType === "来客") {
+
+		            console.log("条件一致 → 点滅開始 & DBアクセス停止");
+
+		            // 点滅開始
+		            document.body.classList.add("blink");
+
+					// 10秒後に点滅停止
+					setTimeout(() => {
+						document.body.classList.remove("blink");
+						
+						// タイマー再開
+						timerId = setInterval(checkLatest, 1000);
+					}, 10000); 
+					
+		            // DBアクセス停止
+		            clearInterval(timerId);
+		        }
+
+		    } catch (e) {
+		        console.error("APIエラー:", e);
+		    }
+		}
+
+		// 1秒ごとに最新データをチェック
+		timerId = setInterval(checkLatest, 1000);
+		
+	    function updateDateTime() {
+	        const now = new Date();
+	        const week = ["日", "月", "火", "水", "木", "金", "土"];
+	
+	        const dateText =
+	            now.getFullYear() + "年" +
+	            (now.getMonth() + 1) + "月" +
+	            now.getDate() + "日 (" +
+	            week[now.getDay()] + ")";
+	
+	        const timeText =
+	            now.getHours() + ":" +
+	            String(now.getMinutes()).padStart(2, '0') + ":" +
+	            String(now.getSeconds()).padStart(2, '0');
+	
+	        document.getElementById("date").textContent = dateText;
+	        document.getElementById("clock").textContent = timeText;
+	    }
+	
+	    updateDateTime();
+	    setInterval(updateDateTime, 1000);
+	</script>
+
+</body>
+</html>

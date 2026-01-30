@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.mapper.ControlMapper">
+
+    <!-- 最新データを取得 -->
+    <select id="selectLatest" resultType="com.example.demo.entity.Control">
+        SELECT 
+            id,
+            来訪業種 AS visitorType,
+            来訪日時 AS visitDateTime
+        FROM t_制御
+        ORDER BY 来訪日時 DESC
+        LIMIT 1
+    </select>
+
+</mapper>
